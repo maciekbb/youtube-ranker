@@ -25,8 +25,10 @@ var fetch_and_store_popular_videos = function(start_index) {
                     }).forEach(function(video) {
                         console.log("Loaded: " + video.player.
                             default);
-                        redis_client.zadd("videos", 0, video.player.
+                        redis_client.zadd("videos", 0, video.id);
+                        redis_client.set("videos:" + video.id + ":url", video.player.
                             default);
+                        redis_client.set("videos:" + video.id + ":title", video.title);
                     });
                 } else {
                     console.log(data);
@@ -46,10 +48,15 @@ fetch_and_store_popular_videos(1);
 
 app.get('/:rank', function(request, response) {
     var rank = request.params.rank;
-    redis_client.zrange("videos", rank, rank, function(res, val) {
-        response.render('index.ejs', {
-            "url": val,
-            "rank": rank
+    redis_client.zrange("videos", rank, rank, function(err, id) {
+        redis_client.get("videos:" + id + ":url", function(err, url) {
+            redis_client.get("videos:" + id + ":title", function(err, title) {
+                response.render('index.ejs', {
+                    "url": url,
+                    "rank": rank,
+                    "title": title
+                });
+            });
         });
     });
 });

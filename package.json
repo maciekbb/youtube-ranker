@@ -1,0 +1,12 @@
+{
+    "name": "youtube-ranker",
+    "description": "application for displaying random youtube videos",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "express": "3.x",
+        "youtube-feeds": "2.2.x",
+        "redis": "0.9.x"
+        "ejs": "1.0.x"
+    }
+}

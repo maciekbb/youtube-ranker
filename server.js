@@ -48,7 +48,8 @@ app.get('/:rank', function(request, response) {
     var rank = request.params.rank;
     redis_client.zrange("videos", rank, rank, function(res, val) {
         response.render('index.ejs', {
-            "url": val
+            "url": val,
+            "rank": rank
         });
     });
 });

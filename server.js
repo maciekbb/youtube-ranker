@@ -1,7 +1,7 @@
 var express = require('express'),
     app = express();
 
-var redis = require("redis"),
+var redis = require('redis-url').connect(process.env.REDISTOGO_URL),
     redis_client = redis.createClient();
 
 var youtube = require('youtube-feeds')

@@ -1,0 +1,47 @@
+// #movies
+
+#movies {
+
+}
+
+// #movies.index
+
+#movies.index {
+
+}
+
+#movies.index .movie {
+  height: 180px; width: 320px;
+  position: relative;
+
+  .image {
+    height: 100%;
+
+    img {
+      display: block;
+      height: 100%; width: 100%;
+    }
+  }
+
+  .title {
+    @include position( absolute, 0 0px 0px 0 );
+
+    background: #000;
+    background: rgba( 0, 0, 0, .7 );
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 1;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    z-index: 9;
+  }  
+}
+
+#movies.index .hd.movie {
+  height: 280px; width: 500px;
+  
+  .title {
+    font-size: 14px;
+  }
+}

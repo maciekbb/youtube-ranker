@@ -29,6 +29,7 @@ var fetch_and_store_popular_videos = function(start_index) {
                         redis_client.set("videos:" + video.id + ":url", video.player.
                             default);
                         redis_client.set("videos:" + video.id + ":title", video.title);
+                        redis_client.set("videos:" + video.id + ":thumb", video.thumbnail.hqDefault);
                     });
                 } else {
                     console.log(data);
@@ -46,7 +47,7 @@ var fetch_and_store_popular_videos = function(start_index) {
 
 fetch_and_store_popular_videos(1);
 
-app.get('/:rank', function(request, response) {
+app.get('/video/:rank', function(request, response) {
     var rank = request.params.rank;
     redis_client.zrange("videos", rank, rank, function(err, id) {
         redis_client.get("videos:" + id + ":url", function(err, url) {
@@ -60,5 +61,51 @@ app.get('/:rank', function(request, response) {
         });
     });
 });
+
+
+app.get('/top', function(request, response) {
+    redis_client.zrevrange("videos", 0, 20, function(err, movies_ids) {
+        console.log(movies_ids);
+
+        var movies = [];
+
+        var addMovieWithId = function(id, callback) {
+            redis_client.get("videos:" + id + ":url", function(err, url) {
+                redis_client.get("videos:" + id + ":title", function(err, title) {
+                    redis_client.get("videos:" + id + ":thumb", function(err, thumb) {
+                        movies.push({
+                            "url": url,
+                            "title": title,
+                            "thumb": thumb
+                        });
+                        callback();
+                    });
+                });
+            });
+        }
+
+        var checkIfRequestCompleted = function() {
+            if (movies.length == movies_ids.length) {
+                console.log("Movies prepared " + JSON.stringify(movies));
+                response.render('list.ejs', {
+                    "movies": movies,
+                });
+            }
+        }
+
+        for (var i = 0; i < movies_ids.length; i++) {
+            addMovieWithId(movies_ids[i], checkIfRequestCompleted);
+        }
+
+
+    });
+});
+
+app.get('/', function(request, response) {
+    response.sendfile(__dirname + "/views/index.html");
+});
+
+app.use(express.static(__dirname + '/public'));
+
 
 app.listen(3000);

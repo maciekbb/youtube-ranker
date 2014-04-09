@@ -14,8 +14,7 @@ var fetch_and_store_popular_videos = function(start_index) {
             'duration': 'short',
             'orderby': 'relevance',
             'licence': 'cc',
-            'genre': 4,
-            'time': 'today'
+            'time': 'this_week'
         },
         function(result, data) {
             if (data) {
@@ -23,9 +22,11 @@ var fetch_and_store_popular_videos = function(start_index) {
                     data.items.filter(function(v) {
                         return v.duration <= 60
                     }).forEach(function(video) {
+                        var likeCount = video.likeCount ? parseInt(video.likeCount) : 0;
+                        console.log(likeCount);
                         console.log("Loaded: " + video.player.
                             default);
-                        redis_client.zadd("videos", 0, video.id);
+                        redis_client.zadd("videos", likeCount, video.id);
                         redis_client.set("videos:" + video.id + ":url", video.player.
                             default);
                         redis_client.set("videos:" + video.id + ":title", video.title);

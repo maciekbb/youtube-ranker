@@ -7,6 +7,7 @@
         "express": "3.x",
         "youtube-feeds": "2.2.x",
         "redis": "0.9.x",
+        "redis-url": "~0.2.0",
         "ejs": "1.0.x"
     }
 }

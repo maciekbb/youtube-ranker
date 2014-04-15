@@ -1,7 +1,7 @@
 var express = require('express'),
     app = express();
 
-var redis_client = require('redis-url').connect(process.env.REDISTOGO_URL);
+var redis_client = require('redis-url').connect(process.env.REDISTOGO_URL || null);
 
 var youtube = require('youtube-feeds')
 
@@ -26,10 +26,10 @@ var fetch_and_store_popular_videos = function(start_index) {
                         console.log("Loaded: " + video.player.
                             default);
                         redis_client.zadd("videos", likeCount, video.id);
-                        redis_client.set("videos:" + video.id + ":url", video.player.
+                        redis_client.hset("videos:" + video.id, "url", video.player.
                             default);
-                        redis_client.set("videos:" + video.id + ":title", video.title);
-                        redis_client.set("videos:" + video.id + ":thumb", video.thumbnail.hqDefault);
+                        redis_client.hset("videos:" + video.id, "title", video.title);
+                        redis_client.hset("videos:" + video.id, "thumb", video.thumbnail.hqDefault);
                     });
                 } else {
                     console.log(data);
@@ -47,22 +47,6 @@ var fetch_and_store_popular_videos = function(start_index) {
 
 fetch_and_store_popular_videos(1);
 
-app.get('/video/:rank', function(request, response) {
-    var rank = request.params.rank;
-    redis_client.zrange("videos", rank, rank, function(err, id) {
-        redis_client.get("videos:" + id + ":url", function(err, url) {
-            redis_client.get("videos:" + id + ":title", function(err, title) {
-                response.render('index.ejs', {
-                    "url": url,
-                    "rank": rank,
-                    "title": title
-                });
-            });
-        });
-    });
-});
-
-
 app.get('/top', function(request, response) {
     redis_client.zrevrange("videos", 0, 20, function(err, movies_ids) {
         console.log(movies_ids);
@@ -70,17 +54,10 @@ app.get('/top', function(request, response) {
         var movies = [];
 
         var addMovieWithId = function(id, callback) {
-            redis_client.get("videos:" + id + ":url", function(err, url) {
-                redis_client.get("videos:" + id + ":title", function(err, title) {
-                    redis_client.get("videos:" + id + ":thumb", function(err, thumb) {
-                        movies.push({
-                            "url": url,
-                            "title": title,
-                            "thumb": thumb
-                        });
-                        callback();
-                    });
-                });
+            redis_client.hgetall("videos:" + id, function(err, video) {
+                movies.push(video);
+                callback();
+
             });
         }
 
